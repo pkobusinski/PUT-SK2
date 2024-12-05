@@ -12,7 +12,7 @@ static int client_fd = -1;
 int connect_to_server(const char* ip, int port) {
     client_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (client_fd < 0) {
-        std::cerr << "Socket creation error\n";
+        perror("Socket creation error");
         return 1;
     }
 
@@ -22,11 +22,11 @@ int connect_to_server(const char* ip, int port) {
     inet_pton(AF_INET, ip, &server_addr.sin_addr);
 
     if (connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        std::cerr << "Connection failed\n";
+        perror("Connection failed");
         return 1;
     }
 
-    std::cout << "Connected to server.\n";
+    printf("Connected to server\n");
     return 0;
 }
 

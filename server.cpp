@@ -53,8 +53,8 @@ private:
                     if (!queue_name.empty() && holding_time > 0) {
                         std::string response = "QUEUE_CREATED " + queue_name;
                         send(client_fd, response.c_str(), response.length(), 0);
-                        create_queue(queue_name, holding_time);
-                        printf("Queue %s created with holding time of %d seconds.\n", queue_name.c_str(), holding_time);
+                        //create_queue(queue_name, holding_time);
+                        printf("Client %d created queue %s with holding time of %d seconds.\n", client_id, queue_name.c_str(), holding_time);
                     } else {
                         std::string response = "QUEUE_CREATION_FAILED";
                         send(client_fd, response.c_str(), response.length(), 0);
@@ -73,7 +73,7 @@ private:
     }
 
     int create_queue(std::string name, int holding_time){
-
+        return 0;
     }
 
 public:
@@ -118,8 +118,8 @@ public:
             }
 
             int client_id = client_id_counter++;
-            printf("New connection from %s:%d with ID: %d\n", inet_ntoa(client_addr.sin_addr), 
-                    ntohs(client_addr.sin_port), client_id);
+            printf("Client %d connected from %s:%d \n", client_id, inet_ntoa(client_addr.sin_addr), 
+                    ntohs(client_addr.sin_port));
 
             std::thread(&Serwer::handleClient, this, client_fd, client_id).detach();
         }
