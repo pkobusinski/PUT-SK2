@@ -42,35 +42,39 @@ private:
             CommandType command = parseCommand(message);
 
             switch (command) {
-            case CREATE_QUEUE: {
-                
-                std::istringstream stream(message);
-                std::string command, queue_name;
-                int holding_time;
+                case CREATE_QUEUE: {
+                    
+                    std::istringstream stream(message);
+                    std::string command, queue_name;
+                    int holding_time;
 
-                stream >> command >> queue_name >> holding_time;
+                    stream >> command >> queue_name >> holding_time;
 
-                if (!queue_name.empty() && holding_time > 0) {
-                    std::string response = "QUEUE_CREATED " + queue_name;
-                    send(client_fd, response.c_str(), response.length(), 0);
-                    printf("Queue %s created with holding time of %d seconds.\n", queue_name.c_str(), holding_time);
-                } else {
-                    std::string response = "QUEUE_CREATION_FAILED";
-                    send(client_fd, response.c_str(), response.length(), 0);
-                    printf("Failed to create queue, invalid parameters.\n");
+                    if (!queue_name.empty() && holding_time > 0) {
+                        std::string response = "QUEUE_CREATED " + queue_name;
+                        send(client_fd, response.c_str(), response.length(), 0);
+                        create_queue(queue_name, holding_time);
+                        printf("Queue %s created with holding time of %d seconds.\n", queue_name.c_str(), holding_time);
+                    } else {
+                        std::string response = "QUEUE_CREATION_FAILED";
+                        send(client_fd, response.c_str(), response.length(), 0);
+                        printf("Failed to create queue, invalid parameters.\n");
+                    }
+                    break;
                 }
-                break;
-            }
-            case UNKNOWN_COMMAND: {
-                std::string response = "UNKNOWN_COMMAND";
-                send(client_fd, response.c_str(), response.length(), 0);
-                break;
+                case UNKNOWN_COMMAND: {
+                    std::string response = "UNKNOWN_COMMAND";
+                    send(client_fd, response.c_str(), response.length(), 0);
+                    break;
+                }
             }
         }
-    }
     close(client_fd);
-}
+    }
 
+    int create_queue(std::string name, int holding_time){
+
+    }
 
 public:
     Serwer(const std::string& addr, int port) {
