@@ -9,18 +9,43 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <vector> 
+#include <queue>
+#include <unordered_map>
+#include <mutex>
+
 #define BUFFER_SIZE 1024
 std::atomic<int> client_id_counter{1};
 
+struct Message{
+    std::string text;
+    time_t creation_time;
+};
+
+struct Queue {
+    int holding_time;
+    std::vector<int> queue_clients; 
+    std::queue<Message> queue_messages;
+};
+
+
 enum CommandType {
     CREATE_QUEUE,
+    LIST_QUEUES,
+    SUBSCRIBE,
+    UNSUBSCRIBE,
+    SEND,
+    RECV,
     UNKNOWN_COMMAND
 };
 
 CommandType parseCommand(const std::string& message) {
     if (message.find("CREATE_QUEUE") == 0) {
         return CREATE_QUEUE;
+    } else if (message.find("LIST_QUEUES") == 0){
+        return LIST_QUEUES;
     }
+    
     return UNKNOWN_COMMAND;
 }
 
@@ -28,6 +53,8 @@ class Serwer {
 private:
     int server_fd;
     struct sockaddr_in server_addr;
+    std::unordered_map<std::string, Queue> queues; // lista kolejek
+    std::mutex queues_mutex;                        // mutex do synchronizacji dostępu do listy_kolejek
 
     void handleClient(int client_fd, int client_id) {
         char buffer[BUFFER_SIZE];
@@ -43,7 +70,6 @@ private:
 
             switch (command) {
                 case CREATE_QUEUE: {
-                    
                     std::istringstream stream(message);
                     std::string command, queue_name;
                     int holding_time;
@@ -51,14 +77,33 @@ private:
                     stream >> command >> queue_name >> holding_time;
 
                     if (!queue_name.empty() && holding_time > 0) {
-                        std::string response = "QUEUE_CREATED " + queue_name;
-                        send(client_fd, response.c_str(), response.length(), 0);
-                        //create_queue(queue_name, holding_time);
-                        printf("Client %d created queue %s with holding time of %d seconds.\n", client_id, queue_name.c_str(), holding_time);
+                        int err = create_queue(queue_name, holding_time);
+                        if(err == 0){
+                            std::string response = "QUEUE_CREATED";
+                            send(client_fd, response.c_str(), response.length(), 0);
+                            printf("Client %d created queue %s with holding time of %d seconds.\n", client_id, queue_name.c_str(), holding_time);
+                        }else {
+                            std::string response = "QUEUE_CREATION_FAILED";
+                            send(client_fd, response.c_str(), response.length(), 0);
+                            printf("Queue creation failed, queue %s already exists.\n", queue_name.c_str());
+                        }
                     } else {
                         std::string response = "QUEUE_CREATION_FAILED";
                         send(client_fd, response.c_str(), response.length(), 0);
                         printf("Failed to create queue, invalid parameters.\n");
+                    }
+                    break;
+                }
+                case LIST_QUEUES: {
+                    printf("test\n");
+                    std::string queues_list = get_all_queues();
+                    if(queues_list.find("test") == 0 ){
+                        std::string response = "NO_QUEUES_AVAILABLE";
+                        send(client_fd, response.c_str(), response.length(), 0);
+                    }else {
+                        std::string response = "AVAILABLE_QUEUES: " + get_all_queues();
+                        send(client_fd, response.c_str(), response.length(), 0);
+                        
                     }
                     break;
                 }
@@ -69,11 +114,32 @@ private:
                 }
             }
         }
-    close(client_fd);
+        close(client_fd);
     }
 
-    int create_queue(std::string name, int holding_time){
+    int create_queue(std::string& name, int holding_time){
+        std::lock_guard<std::mutex> lock(queues_mutex); 
+        if (queues.find(name) != queues.end()) { // w unordered_map zwraca iterator wskazujacy na koniec jak nic nie znajdzie
+            return 1;  
+        }
+        queues[name] = Queue{holding_time, {}, {}};
         return 0;
+    }
+
+    std::string get_all_queues() {
+        std::lock_guard<std::mutex> lock(queues_mutex); 
+        if (queues.empty()) {
+            return "test";
+        }
+
+        std::ostringstream stream;
+        for (const auto& [queue_name, queue] : queues) {
+            stream << queue_name << ",";
+        }
+
+        std::string result = stream.str();
+        result.pop_back();              // usunięcie ostatniego przecinka
+        return result;
     }
 
 public:
@@ -111,7 +177,6 @@ public:
             struct sockaddr_in client_addr;
             socklen_t client_addrlen = sizeof(client_addr);
             int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addrlen);
-
             if (client_fd < 0) {
                 perror("Accept failed");
                 continue;
@@ -126,6 +191,9 @@ public:
     }
 
     ~Serwer() {
+        std::lock_guard<std::mutex> lock(queues_mutex); 
+        queues.clear();
+
         close(server_fd);
     }
 };
