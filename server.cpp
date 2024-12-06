@@ -13,8 +13,9 @@
 #include <queue>
 #include <unordered_map>
 #include <mutex>
+#include "global.hpp"
 
-#define BUFFER_SIZE 1024
+
 std::atomic<int> client_id_counter{1};
 
 struct Message{
@@ -28,27 +29,6 @@ struct Queue {
     std::queue<Message> queue_messages;
 };
 
-
-enum CommandType {
-    CREATE_QUEUE,
-    LIST_QUEUES,
-    SUBSCRIBE,
-    UNSUBSCRIBE,
-    SEND,
-    RECV,
-    UNKNOWN_COMMAND
-};
-
-CommandType parseCommand(const std::string& message) {
-    if (message.find("CREATE_QUEUE") == 0) {
-        return CREATE_QUEUE;
-    } else if (message.find("LIST_QUEUES") == 0){
-        return LIST_QUEUES;
-    }
-    
-    return UNKNOWN_COMMAND;
-}
-
 class Serwer {
 private:
     int server_fd;
@@ -57,59 +37,72 @@ private:
     std::mutex queues_mutex;                        // mutex do synchronizacji dostępu do listy_kolejek
 
     void handleClient(int client_fd, int client_id) {
-        char buffer[BUFFER_SIZE];
+        
+        fbs input;
+        fsb output;
         while (true) {
-            int bytes_read = read(client_fd, buffer, BUFFER_SIZE);
+            int bytes_read = read(client_fd, &input, sizeof(input));
             if (bytes_read <= 0) {
                 printf("Client %d disconnected.\n", client_id);
                 break;
             }
-            
-            std::string message(buffer);
-            CommandType command = parseCommand(message);
 
-            switch (command) {
+            switch (input.command) {
                 case CREATE_QUEUE: {
-                    std::istringstream stream(message);
-                    std::string command, queue_name;
-                    int holding_time;
-
-                    stream >> command >> queue_name >> holding_time;
-
-                    if (!queue_name.empty() && holding_time > 0) {
-                        int err = create_queue(queue_name, holding_time);
+                    if (input.queue_name[0] != '\0' && input.holding_time > 0) {
+                        int err = create_queue(input.queue_name, input.holding_time);
                         if(err == 0){
-                            std::string response = "QUEUE_CREATED";
-                            send(client_fd, response.c_str(), response.length(), 0);
-                            printf("Client %d created queue %s with holding time of %d seconds.\n", client_id, queue_name.c_str(), holding_time);
+                            output.result = SUCCESS; 
+                            subscribe(input.queue_name, client_id);
+                            send(client_fd, &output, sizeof(output), 0);
+                            printf("Client %d created queue %s with holding time of %d seconds.\n", client_id, input.queue_name, input.holding_time);
                         }else {
-                            std::string response = "QUEUE_CREATION_FAILED";
-                            send(client_fd, response.c_str(), response.length(), 0);
-                            printf("Queue creation failed, queue %s already exists.\n", queue_name.c_str());
+                            output.result = FAILURE; 
+                            send(client_fd, &output, sizeof(output), 0);
+                            printf("Queue creation failed, queue %s already exists.\n", input.queue_name);
                         }
                     } else {
-                        std::string response = "QUEUE_CREATION_FAILED";
-                        send(client_fd, response.c_str(), response.length(), 0);
+                        output.result = FAILURE; 
+                        send(client_fd, &output, sizeof(output), 0);
                         printf("Failed to create queue, invalid parameters.\n");
                     }
                     break;
                 }
-                case LIST_QUEUES: {
-                    printf("test\n");
-                    std::string queues_list = get_all_queues();
-                    if(queues_list.find("test") == 0 ){
-                        std::string response = "NO_QUEUES_AVAILABLE";
-                        send(client_fd, response.c_str(), response.length(), 0);
-                    }else {
-                        std::string response = "AVAILABLE_QUEUES: " + get_all_queues();
-                        send(client_fd, response.c_str(), response.length(), 0);
-                        
+                case SUBSCRIBE: {
+                    int err = subscribe(input.queue_name, client_id);
+                    if(err == 0){
+                        output.result = SUCCESS;
+                        send(client_fd, &output, sizeof(output), 0);
+                        printf("Client %d subscribed queue %s.\n", client_id, input.queue_name);
+                    }
+                    else if (err > 0){
+                        output.result = FAILURE;
+                        send(client_fd, &output, sizeof(output), 0);
+                        if(err == 1){
+                            printf("Failed to subscribe, queue %s does not exist.\n", input.queue_name);
+                        }else{ 
+                            printf("Client %d already subscribes queue %s.\n", client_id, input.queue_name);
+                        }
                     }
                     break;
                 }
-                case UNKNOWN_COMMAND: {
-                    std::string response = "UNKNOWN_COMMAND";
-                    send(client_fd, response.c_str(), response.length(), 0);
+                case UNSUBSCRIBE: {
+                    int err = unsubscribe(input.queue_name, client_id);
+                    if(err == 0){
+                        output.result = SUCCESS;
+                        send(client_fd, &output, sizeof(output), 0);
+                        printf("Client %d unsubscribed queue %s.\n", client_id, input.queue_name);
+                    }
+                    else if (err > 0){
+                        output.result = FAILURE;
+                        send(client_fd, &output, sizeof(output), 0);
+                        if(err == 1){
+                            printf("Failed to unsubscribe, queue %s does not exist.\n", input.queue_name);
+                        }else if (err == 2){ 
+                            printf("Client %d does not subscribe queue %s.\n", client_id, input.queue_name);
+                        }else 
+                            printf("Failed to unsubscribe\n");
+                    }
                     break;
                 }
             }
@@ -117,30 +110,72 @@ private:
         close(client_fd);
     }
 
-    int create_queue(std::string& name, int holding_time){
+    int create_queue(const char * name, int holding_time){
         std::lock_guard<std::mutex> lock(queues_mutex); 
-        if (queues.find(name) != queues.end()) { // w unordered_map zwraca iterator wskazujacy na koniec jak nic nie znajdzie
+        if (queues.find(name) != queues.end()) {  // w unordered_map zwraca iterator wskazujacy na koniec jak nic nie znajdzie
             return 1;  
         }
         queues[name] = Queue{holding_time, {}, {}};
         return 0;
     }
 
-    std::string get_all_queues() {
-        std::lock_guard<std::mutex> lock(queues_mutex); 
-        if (queues.empty()) {
-            return "test";
-        }
-
-        std::ostringstream stream;
-        for (const auto& [queue_name, queue] : queues) {
-            stream << queue_name << ",";
-        }
-
-        std::string result = stream.str();
-        result.pop_back();              // usunięcie ostatniego przecinka
-        return result;
+    bool queue_exists(const char* name) {
+        return queues.find(name) != queues.end();  
     }
+
+    bool is_subscribed(const char* name, int client_id) {
+        
+        if(!queue_exists(name))
+            return false;
+        auto it = queues.find(name);
+        
+        auto& clients = it->second.queue_clients;
+        for (int i = 0; i < clients.size(); ++i) {
+            if (clients[i] == client_id) {
+                return true;  
+            }
+        }
+        return false;  
+    }
+
+    int subscribe(const char* name, int client_id) {
+        std::lock_guard<std::mutex> lock(queues_mutex);
+        if (!queue_exists(name)) {
+            return 1;  
+        }
+
+        if (is_subscribed(name, client_id)) {
+            return 2;  
+        }
+
+        auto& clients = queues[name].queue_clients;
+        clients.push_back(client_id);
+        return 0;
+    }
+
+    int unsubscribe(const char* name, int client_id) {
+        std::lock_guard<std::mutex> lock(queues_mutex);
+        if (!queue_exists(name)) {
+            return 1;  
+        }
+
+        if (!is_subscribed(name, client_id)) {
+            return 2;  
+        }
+
+        auto& clients = queues[name].queue_clients;
+        for (int i = 0; i < clients.size(); ++i) {
+            if (clients[i] == client_id) {
+                clients[i] = clients.back();
+                clients.pop_back();
+                return 0;  
+            }
+        }
+
+        return 3;
+    }
+
+
 
 public:
     Serwer(const std::string& addr, int port) {

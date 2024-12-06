@@ -40,75 +40,71 @@ int disconnect() {
 }
 
 int create_queue(const char* queue_name, int holding_time) {
-    std::string command = "CREATE_QUEUE " + std::string(queue_name) + " " + std::to_string(holding_time);
-    send(client_fd, command.c_str(), command.length(), 0);
-
-    char buffer[BUFFER_SIZE] = {0};
-    int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
+    fbs action;
+    fsb answer;
+    action.command = CREATE_QUEUE;
+    strcpy(action.queue_name, queue_name); 
+    action.holding_time = holding_time;
+    
+    send(client_fd, &action, sizeof(action), 0);
+    int bytes_received = read(client_fd, &answer, sizeof(answer));
     if (bytes_received > 0) {
-        if (std::string(buffer).find("QUEUE_CREATED") == 0) {
+        if (answer.result == SUCCESS) {
             return 0;
         }
     }
     return 1;
 }
 
-std::string get_available_queues(){
-    std::string command = "LIST_QUEUES ";
-    send(client_fd, command.c_str(), command.length(), 0);
+int subscribe(const char* queue_name) {
+    fbs action;
+    fsb answer;
+    action.command = SUBSCRIBE;
+    strcpy(action.queue_name, queue_name); 
 
-    char buffer[BUFFER_SIZE] = {0};
-    int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
+    send(client_fd, &action, sizeof(action), 0);
+    int bytes_received = read(client_fd, &answer, sizeof(answer));
     if (bytes_received > 0) {
-        if (std::string(buffer).find("AVAILABLE_QUEUES") == 0) {
-            return buffer;
+        if (answer.result == SUCCESS) {
+            return 0;
         }
     }
-    return buffer;
-
+    return 1;
 }
 
-// int subscribe(const char* queue_name) {
-//     std::string command = "SUBSCRIBE " + std::string(queue_name);
-//     send(client_fd, command.c_str(), command.length(), 0);
+int unsubscribe(const char* queue_name) {
+    fbs action;
+    fsb answer;
+    action.command = UNSUBSCRIBE;
+    strcpy(action.queue_name, queue_name); 
 
-//     char buffer[BUFFER_SIZE] = {0};
-//     int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
-//     if (bytes_received > 0) {
-//         if (std::string(buffer).find("SUBSCRIBED") == 0) {
-//             return 0;
-//         }
-//     }
-//     return 1;
-// }
+    send(client_fd, &action, sizeof(action), 0);
+    int bytes_received = read(client_fd, &answer, sizeof(answer));
+    if (bytes_received > 0) {
+        if (answer.result == SUCCESS) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
-// int unsubscribe(const char* queue_name) {
-//     std::string command = "UNSUBSCRIBE " + std::string(queue_name);
-//     send(client_fd, command.c_str(), command.length(), 0);
+int send_msg(const char* queue_name, const char* msg, size_t msg_len) {
+    fbs action;
+    fsb answer;
+    action.command = SEND;
+    strcpy(action.queue_name, queue_name); 
+    strcpy(action.message, msg);
+    action.msg_len = msg_len; 
 
-//     char buffer[BUFFER_SIZE] = {0};
-//     int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
-//     if (bytes_received > 0) {
-//         if (std::string(buffer).find("UNSUBSCRIBED") == 0) {
-//             return 0;
-//         }
-//     }
-//     return 1;
-// }
-
-// int send_msg(const char* queue_name, const char* msg, size_t msg_len) {
-//     std::string command = "SEND " + std::string(queue_name) + " " + std::string(msg) + " " + std::to_string(msg_len);
-//     send(client_fd, command.c_str(), command.length(), 0);
-
-//     char buffer[BUFFER_SIZE] = {0};
-//     int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
-//     if (bytes_received > 0) {
-//         if (std::string(buffer).find("SEND") == 0) {
-//             return 0;
-//         }
-//     }
-//     return 1;
-// }
+    send(client_fd, &action, sizeof(action), 0);
+    int bytes_received = read(client_fd, &answer, sizeof(answer));
+    if (bytes_received > 0) {
+        if (answer.result == SUCCESS) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 // int recv_msg(const char* queue_name, const char* msg, size_t msg_len) {
 //     std::string command = "RECV " + std::string(queue_name) + " " + std::string(msg) + " " + std::to_string(msg_len);
@@ -122,4 +118,20 @@ std::string get_available_queues(){
 //         }
 //     }
 //     return 1;
+// }
+
+// std::string get_available_queues(){
+//     std::string command = "LIST_QUEUES ";
+//     send(client_fd, command.c_str(), command.length(), 0);
+
+
+//     char buffer[BUFFER_SIZE] = {0};
+//     int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
+//     if (bytes_received > 0) {
+//         if (std::string(buffer).find("AVAILABLE_QUEUES") == 0) {
+//             return buffer;
+//         }
+//     }
+//     return buffer;
+
 // }
