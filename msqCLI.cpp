@@ -88,13 +88,12 @@ int unsubscribe(const char* queue_name) {
     return 1;
 }
 
-int send_msg(const char* queue_name, const char* msg, size_t msg_len) {
+int send_msg(const char* queue_name, const char* msg) {
     fbs action;
     fsb answer;
     action.command = SEND;
     strcpy(action.queue_name, queue_name); 
     strcpy(action.message, msg);
-    action.msg_len = msg_len; 
 
     send(client_fd, &action, sizeof(action), 0);
     int bytes_received = read(client_fd, &answer, sizeof(answer));
@@ -106,19 +105,23 @@ int send_msg(const char* queue_name, const char* msg, size_t msg_len) {
     return 1;
 }
 
-// int recv_msg(const char* queue_name, const char* msg, size_t msg_len) {
-//     std::string command = "RECV " + std::string(queue_name) + " " + std::string(msg) + " " + std::to_string(msg_len);
-//     send(client_fd, command.c_str(), command.length(), 0);
+int recv_msg(const char* queue_name, char* msg) {
+    fbs action;
+    fsb answer;
+    action.command = RECV;
+    strcpy(action.queue_name, queue_name); 
+ 
 
-//     char buffer[BUFFER_SIZE] = {0};
-//     int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
-//     if (bytes_received > 0) {
-//         if (std::string(buffer).find("RECV") == 0) {
-//             return 0;
-//         }
-//     }
-//     return 1;
-// }
+    send(client_fd, &action, sizeof(action), 0);
+    int bytes_received = read(client_fd, &answer, sizeof(answer));
+    if (bytes_received > 0) {
+        if (answer.result == SUCCESS) {
+            strcpy(msg, answer.message);
+            return answer.msg_len;
+        }
+    }
+    return 1;
+}
 
 // std::string get_available_queues(){
 //     std::string command = "LIST_QUEUES ";

@@ -13,28 +13,31 @@
 #include <queue>
 #include <unordered_map>
 #include <mutex>
+#include <condition_variable>
 #include "global.hpp"
 
 
 std::atomic<int> client_id_counter{1};
 
-struct Message{
-    std::string text;
+struct Message {
+    char* text;
     time_t creation_time;
+    bool is_read;  
 };
 
 struct Queue {
     int holding_time;
-    std::vector<int> queue_clients; 
+    std::vector<int> queue_clients;
     std::queue<Message> queue_messages;
-};
 
+};
 class Serwer {
 private:
     int server_fd;
     struct sockaddr_in server_addr;
-    std::unordered_map<std::string, Queue> queues; // lista kolejek
-    std::mutex queues_mutex;                        // mutex do synchronizacji dostępu do listy_kolejek
+    std::unordered_map<std::string, Queue> queues; 
+    std::mutex queues_mutex;
+    std::condition_variable queue_condition;  // obsługa odczytywania (czekanie dopóki nie pojawi się nowa wiadomość)                        
 
     void handleClient(int client_fd, int client_id) {
         
@@ -81,7 +84,7 @@ private:
                         if(err == 1){
                             printf("Failed to subscribe, queue %s does not exist.\n", input.queue_name);
                         }else{ 
-                            printf("Client %d already subscribes queue %s.\n", client_id, input.queue_name);
+                            printf("Failed to subscribe, Client %d already subscribes queue %s.\n", client_id, input.queue_name);
                         }
                     }
                     break;
@@ -92,21 +95,55 @@ private:
                         output.result = SUCCESS;
                         send(client_fd, &output, sizeof(output), 0);
                         printf("Client %d unsubscribed queue %s.\n", client_id, input.queue_name);
-                    }
-                    else if (err > 0){
+                    }else if (err > 0){
                         output.result = FAILURE;
                         send(client_fd, &output, sizeof(output), 0);
                         if(err == 1){
                             printf("Failed to unsubscribe, queue %s does not exist.\n", input.queue_name);
                         }else if (err == 2){ 
-                            printf("Client %d does not subscribe queue %s.\n", client_id, input.queue_name);
+                            printf("Failed to unsubscribe, Client %d does not subscribe queue %s.\n", client_id, input.queue_name);
                         }else 
                             printf("Failed to unsubscribe\n");
                     }
                     break;
                 }
+                case SEND: {
+                    int err = send_message(input.queue_name, input.message, client_id);
+                    if(err == 0){
+                        output.result = SUCCESS;
+                        send(client_fd, &output, sizeof(output), 0);
+                        printf("Client %d sent msg %s to queue %s.\n", client_id,input.message, input.queue_name);
+                    }else if(err > 0){
+                        output.result = FAILURE;
+                        send(client_fd, &output, sizeof(output), 0);
+                        if(err == 1){
+                            printf("Failed to send msg, queue %s does not exist.\n", input.queue_name);
+                        }else if (err == 2){ 
+                            printf("Failed to send msg, Client %d does not subscribe queue %s.\n", client_id, input.queue_name);
+                        }
+                    }
+                }
+                case RECV: {
+                    int err = recv_message(input.queue_name, output.message, client_id);
+                    if(err == 0){
+                        output.result = SUCCESS;
+                        output.msg_len = strlen(output.message);
+                        send(client_fd, &output, sizeof(output), 0);
+                        printf("Client %d recived msg %s from queue %s.\n", client_id, output.message, input.queue_name);
+                        printf("Message removed from queue %s.\n", input.queue_name);
+                    }else if(err > 0){
+                        output.result = FAILURE;
+                        send(client_fd, &output, sizeof(output), 0);
+                        if(err == 1){
+                            printf("Failed to recieve msg, queue %s does not exist.\n", input.queue_name);
+                        }else if (err == 2){ 
+                            printf("Failed to recieve msg, Client %d does not subscribe queue %s.\n", client_id, input.queue_name);
+                        }
+                    }
+                }
             }
         }
+
         close(client_fd);
     }
 
@@ -175,7 +212,65 @@ private:
         return 3;
     }
 
+    int send_message(const char* queue_name, char* message_text, int client_id) {
+        std::lock_guard<std::mutex> lock(queues_mutex);
+        if (!queue_exists(queue_name)) {
+            return 1;  
+        }
+        if(!is_subscribed(queue_name, client_id)){
+            return 2;
+        }
+        
+        Message msg{message_text, time(NULL), false};
+        queues[queue_name].queue_messages.push(msg);
+        queue_condition.notify_one(); 
 
+        return 0;
+    }
+
+    int recv_message(const char* queue_name, char* message_text, int client_id) {
+        std::unique_lock<std::mutex> lock(queues_mutex);    
+
+        if (!queue_exists(queue_name)) {
+            return 1;  
+        }
+
+        if (!is_subscribed(queue_name, client_id)) {
+            return 2;  
+        }
+
+        auto& queue = queues[queue_name];
+        if (queue.queue_messages.empty()) {
+            queue_condition.wait(lock);  
+        }
+
+        Message& msg = queue.queue_messages.front();
+        strcpy(message_text, msg.text);  
+        queue.queue_messages.pop();
+        return 0;  
+    }
+
+
+    void remove_expired_messages() {
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));  
+
+            std::lock_guard<std::mutex> lock(queues_mutex);
+            for (auto& queue_entry : queues) {
+                auto& queue = queue_entry.second;
+                while (!queue.queue_messages.empty()) {
+                    Message& msg = queue.queue_messages.front();
+                    time_t current_time = time(NULL);
+                    if (current_time - msg.creation_time >= queue.holding_time) {
+                        queue.queue_messages.pop();  
+                        printf("Message removed from queue %s.\n", queue_entry.first.c_str());
+                    } else {
+                        break;  
+                    }
+                }
+            }
+        }
+    }
 
 public:
     Serwer(const std::string& addr, int port) {
@@ -205,6 +300,7 @@ public:
             exit(EXIT_FAILURE);
         }
         printf("Server is listening on %s:%hu\n", addr.c_str(), port);
+        std::thread(&Serwer::remove_expired_messages, this).detach();
     }
 
     void run() {

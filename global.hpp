@@ -22,11 +22,13 @@ struct fbs {    // struktra do komunikacji sieciowej biblioteka -> serwer
     char queue_name[255];
     char message[255]; 
     int holding_time;
-    size_t msg_len;
 };
 
 struct fsb {  // struktra do komunikacji sieciowej serwer -> biblioteka 
     ResultType result;
+    char message[255];
+    size_t msg_len;
+    
 };
 
 

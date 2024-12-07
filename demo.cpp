@@ -11,6 +11,10 @@ int main() {
     create_queue("kolejka1", 60);
     unsubscribe("kolejka1");
     subscribe("kolejka1");
+    send_msg("kolejka1", "hello");
+    char buf[255];
+    int cnt = recv_msg("kolejka1", buf );
+    printf("buf: %s, cnt: %d \n", buf, cnt);
     //std::cout << get_available_queues() << std::endl;
 
     while(true){}
