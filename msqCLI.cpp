@@ -5,7 +5,6 @@
 #include <arpa/inet.h>
 #include "msqCLI.hpp"
 
-#define BUFFER_SIZE 1024
 
 static int client_fd = -1;
 
