@@ -40,19 +40,22 @@ int disconnect() {
 }
 
 int create_queue(const char* queue_name, int holding_time) {
-    fbs action;
-    fsb answer;
-    action.command = CREATE_QUEUE;
-    strcpy(action.queue_name, queue_name); 
-    action.holding_time = holding_time;
-    
-    send(client_fd, &action, sizeof(action), 0);
-    int bytes_received = read(client_fd, &answer, sizeof(answer));
-    if (bytes_received > 0) {
-        if (answer.result == SUCCESS) {
-            return 0;
+    if (queue_name[0] != '\0' && holding_time > 0) {
+        fbs action;
+        fsb answer;
+        action.command = CREATE_QUEUE;
+        strcpy(action.queue_name, queue_name); 
+        action.holding_time = holding_time;
+        
+        send(client_fd, &action, sizeof(action), 0);
+        int bytes_received = read(client_fd, &answer, sizeof(answer));
+        if (bytes_received > 0) {
+            if (answer.result == SUCCESS) {
+                return 0;
+            }
         }
     }
+    
     return 1;
 }
 
@@ -99,7 +102,7 @@ int send_msg(const char* queue_name, const char* msg) {
     int bytes_received = read(client_fd, &answer, sizeof(answer));
     if (bytes_received > 0) {
         if (answer.result == SUCCESS) {
-            return 0;
+            return answer.msg_len;
         }
     }
     return 1;
