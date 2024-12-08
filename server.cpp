@@ -20,7 +20,7 @@
 std::atomic<int> client_id_counter{1};       // obsługa synchronizacji przydzielania client_id
 
 struct Message {
-    char* text;
+    char text[255];
     time_t creation_time;
     bool is_read;  
 };
@@ -219,22 +219,29 @@ private:
         return 3;
     }
     
-    int send_message(const char* queue_name, char* message_text, int client_id) {
+    int send_message(const char* queue_name, const char* message_text, int client_id) {
         std::lock_guard<std::mutex> lock(queues_mutex);
+
         if (!queue_exists(queue_name)) {
             return 1;  
         }
-        if(!is_subscribed(queue_name, client_id)){
-            return 2;
-        }
-        
-        
-        Message msg{message_text, time(NULL), false};
-        queues[queue_name].queue_messages.push(msg);
-        queue_condition.notify_one(); 
 
-        return 0;
+        if (!is_subscribed(queue_name, client_id)) {
+            return 2;  
+        }
+
+        
+        Message msg;
+        msg.creation_time = time(NULL);
+        msg.is_read = false;
+        strcpy(msg.text, message_text); 
+        queues[queue_name].queue_messages.push(msg);
+
+        queue_condition.notify_one();
+
+        return 0;  // Sukces
     }
+
 
     int recv_message(const char* queue_name, char* message_text, int client_id) {
         std::unique_lock<std::mutex> lock(queues_mutex);    
@@ -249,25 +256,24 @@ private:
 
         auto& queue = queues[queue_name];
         
-        // Wypisanie zawartości kolejki przed usunięciem wiadomości
-        printf("Queue %s before receiving message:\n", queue_name);
-        std::queue<Message> temp_queue = queue.queue_messages;  // Skopiuj kolejkę do tymczasowej zmiennej, aby nie modyfikować oryginału
-        int message_index = 1;
-        while (!temp_queue.empty()) {
-            Message& msg = temp_queue.front();
-            printf("Message %d: %s (Created at: %ld, Read: %s)\n", 
-                message_index++, msg.text, msg.creation_time, (msg.is_read ? "Yes" : "No"));
-            temp_queue.pop();
-        }
+        // // Wypisanie zawartości kolejki przed usunięciem wiadomości
+        // printf("Queue %s before receiving message:\n", queue_name);
+        // std::queue<Message> temp_queue = queue.queue_messages; 
+        // int message_index = 1;
+        // while (!temp_queue.empty()) {
+        //     Message& msg = temp_queue.front();
+        //     printf("Message %d: %s (Created at: %ld, Read: %s)\n", 
+        //         message_index++, msg.text, msg.creation_time, (msg.is_read ? "Yes" : "No"));
+        //     temp_queue.pop();
+        // }
 
         while (queue.queue_messages.empty()) {
-            queue_condition.wait(lock);  // Czekamy, aż pojawią się wiadomości
+            queue_condition.wait(lock);  
         }
 
-        // Odbieramy wiadomość
         Message& msg = queue.queue_messages.front();
         strcpy(message_text, msg.text);  
-        queue.queue_messages.pop();  // Usuwamy wiadomość z kolejki
+        queue.queue_messages.pop(); 
 
         return 0;  
     }
