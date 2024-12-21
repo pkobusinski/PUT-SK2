@@ -1,16 +1,12 @@
 #include <unistd.h>
+#include <iostream>
 #include <cstring>
 #include <cstdlib> 
-#include <cstdlib>
 #include <thread>
-#include <sstream>
 #include <atomic>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#include <vector> 
-#include <queue>
 #include <unordered_map>
 #include <mutex>
 #include <condition_variable>
@@ -19,18 +15,7 @@
 
 std::atomic<int> client_id_counter{1};       // obsługa synchronizacji przydzielania client_id
 
-struct Message {
-    char text[255];
-    time_t creation_time;
-    bool is_read;  
-};
 
-struct Queue {
-    int holding_time;
-    std::vector<int> queue_clients;
-    std::queue<Message> queue_messages;
-
-};
 class Serwer {
 private:
     int server_fd;
@@ -146,6 +131,13 @@ private:
                     }
                     break;
                 }
+                case LIST_QUEUES: {
+                    get_queue_names(output.message);
+                    output.msg_len = strlen(output.message);
+                    output.result = (output.msg_len != 0) ? SUCCESS : FAILURE;
+                    send(client_fd, &output, sizeof(output), 0);
+                    break;
+                }
             }
 
         }
@@ -163,8 +155,13 @@ private:
         return 0;
     }
 
-    bool queue_exists(const char* name) {                  // TODO: problem z podciagami znaków (kolejka w kolejka1)
-        return queues.find(name) != queues.end();  
+    bool queue_exists(const char* name) { 
+        for (const auto& pair : queues) {
+            if (pair.first == name) {  
+                return true;
+            }
+        }
+        return false;
     }
 
     bool is_subscribed(const char* name, int client_id) {
@@ -239,7 +236,7 @@ private:
 
         queue_condition.notify_one();
 
-        return 0;  // Sukces
+        return 0;  
     }
 
 
@@ -256,17 +253,6 @@ private:
 
         auto& queue = queues[queue_name];
         
-        // // Wypisanie zawartości kolejki przed usunięciem wiadomości
-        // printf("Queue %s before receiving message:\n", queue_name);
-        // std::queue<Message> temp_queue = queue.queue_messages; 
-        // int message_index = 1;
-        // while (!temp_queue.empty()) {
-        //     Message& msg = temp_queue.front();
-        //     printf("Message %d: %s (Created at: %ld, Read: %s)\n", 
-        //         message_index++, msg.text, msg.creation_time, (msg.is_read ? "Yes" : "No"));
-        //     temp_queue.pop();
-        // }
-
         while (queue.queue_messages.empty()) {
             queue_condition.wait(lock);  
         }
@@ -278,6 +264,22 @@ private:
         return 0;  
     }
 
+    void get_queue_names(char* result) {
+        std::lock_guard<std::mutex> lock(queues_mutex);  
+
+        result[0] = '\0';   
+        bool first = true;  
+
+        for (const auto& pair : queues) {
+            const std::string& queue_name = pair.first;
+
+            if (!first) {
+                strcat(result, ",");
+            }
+            first = false;
+            strcat(result, queue_name.c_str());
+        }
+    }
 
     void remove_expired_messages() {
         while (true) {

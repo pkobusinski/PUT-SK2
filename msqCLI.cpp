@@ -5,7 +5,6 @@ static int client_fd = -1;
 int connect_to_server(const char* ip, int port) {
     client_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (client_fd < 0) {
-        //perror("Socket creation error");
         return 1;
     }
 
@@ -15,7 +14,6 @@ int connect_to_server(const char* ip, int port) {
     inet_pton(AF_INET, ip, &server_addr.sin_addr);
 
     if (connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        //perror("Connection failed");
         return 1;
     }
 
@@ -119,18 +117,19 @@ int recv_msg(const char* queue_name, char* msg) {
     return 1;
 }
 
-// std::string get_available_queues(){
-//     std::string command = "LIST_QUEUES ";
-//     send(client_fd, command.c_str(), command.length(), 0);
+int get_available_queues(char * queues){
+    fbs action;
+    fsb answer;
+    action.command = LIST_QUEUES;
+    send(client_fd, &action, sizeof(action), 0);
+    
+    int bytes_received = read(client_fd, &answer, sizeof(answer));
+    if (bytes_received > 0) {
+        if (answer.result == SUCCESS) {
+            strcpy(queues, answer.message);
+            return 0;
+        }
+    }
+    return 1;
 
-
-//     char buffer[BUFFER_SIZE] = {0};
-//     int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
-//     if (bytes_received > 0) {
-//         if (std::string(buffer).find("AVAILABLE_QUEUES") == 0) {
-//             return buffer;
-//         }
-//     }
-//     return buffer;
-
-// }
+}
