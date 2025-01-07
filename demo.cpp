@@ -1,4 +1,8 @@
 #include "msqCLI.hpp"
+#include <string>
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
 
 int main() {
 

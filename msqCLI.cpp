@@ -1,4 +1,11 @@
 #include "msqCLI.hpp"
+#include <string>
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include "global.hpp"
 
 static int client_fd = -1;
 

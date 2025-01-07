@@ -1,13 +1,7 @@
 #ifndef MSQCLI_HPP
 #define MSQCLI_HPP
 
-#include <string>
-#include <iostream>
-#include <cstring>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include "global.hpp"
+
 
 int connect_to_server(const char* ip, int port);
 int disconnect();
