@@ -1,0 +1,5 @@
+/home/piotr/sk2/PUT-SK2/build/CMakeFiles/msqCLI.dir
+/home/piotr/sk2/PUT-SK2/build/CMakeFiles/server.dir
+/home/piotr/sk2/PUT-SK2/build/CMakeFiles/demo.dir
+/home/piotr/sk2/PUT-SK2/build/CMakeFiles/edit_cache.dir
+/home/piotr/sk2/PUT-SK2/build/CMakeFiles/rebuild_cache.dir

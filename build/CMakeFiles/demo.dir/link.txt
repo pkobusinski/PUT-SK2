@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/demo.dir/src/demo.cpp.o CMakeFiles/demo.dir/src/global.cpp.o CMakeFiles/demo.dir/src/msqCLI.cpp.o -o demo  -Wl,-rpath,/home/piotr/sk2/PUT-SK2/build libmsqCLI.so 
