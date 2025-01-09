@@ -1,26 +1,26 @@
 #ifndef GLOBAL_HPP
 #define GLOBAL_HPP
 
-#include <vector> 
+#include <vector>
 #include <queue>
-#include <ctime> 
+#include <string> 
 
-enum CommandType {
-    CREATE_QUEUE,
-    SUBSCRIBE,
-    UNSUBSCRIBE,
-    SEND,
-    RECV,
-    LIST_QUEUES
-};
+#define HEADER_SIZE 13
 
-enum ResultType {
+enum MsgType {
+    CREAT,
+    SUBSC,
+    UNSUB,
+    SENDM,
+    RECVM,
+    LISTQ, 
     SUCCESS,
     FAILURE
 };
 
+
 struct Message {
-    char text[255];
+    std::string text;  
     time_t creation_time;
     bool is_read;  
 };
@@ -29,22 +29,11 @@ struct Queue {
     int holding_time;
     std::vector<int> queue_clients;
     std::queue<Message> queue_messages;
-
 };
 
-struct fbs {    // struktra do komunikacji sieciowej biblioteka -> serwer 
-    CommandType command;
-    char queue_name[255];
-    char message[255]; 
-    int holding_time;
-};
 
-struct fsb {  // struktra do komunikacji sieciowej serwer -> biblioteka 
-    ResultType result;
-    char message[255];
-    size_t msg_len;
-    
-};
 
+std::string create_header(int command_type, size_t message_length); 
+bool parseHeader(const std::string& header, MsgType& command, size_t& message_length);
 
 #endif

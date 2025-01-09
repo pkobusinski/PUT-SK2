@@ -5,7 +5,10 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sstream>
+#include <iomanip>
 #include "global.hpp"
+
 
 static int client_fd = -1;
 
@@ -14,16 +17,16 @@ int connect_to_server(const char* ip, int port) {
     if (client_fd < 0) {
         return 1;
     }
-
+    
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
     inet_pton(AF_INET, ip, &server_addr.sin_addr);
-
+    
     if (connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         return 1;
     }
-
+    
     return 0;
 }
 
@@ -33,110 +36,222 @@ int disconnect() {
         close(client_fd);
         client_fd = -1;
         return 0;
-    }else   
+    } else {
         return 1;
+    }
 }
 
-int create_queue(const char* queue_name, int holding_time) {
-    if (queue_name[0] != '\0' && holding_time > 0) {
-        fbs action;
-        fsb answer;
-        action.command = CREATE_QUEUE;
-        strcpy(action.queue_name, queue_name); 
-        action.holding_time = holding_time;
-        
-        send(client_fd, &action, sizeof(action), 0);
-        int bytes_received = read(client_fd, &answer, sizeof(answer));
-        if (bytes_received > 0) {
-            if (answer.result == SUCCESS) {
-                return 0;
-            }
+int create_queue(const std::string& queue_name, int holding_time) {
+    if (!queue_name.empty() && holding_time > 0) {
+        std::string message;
+        std::string div = ":";
+
+        message = queue_name + div + std::to_string(holding_time);
+        std::string message_content = message.c_str();
+        std::string header = create_header(CREAT, message_content.length());
+
+        std::string complete_message = header + message_content; 
+        send(client_fd, complete_message.c_str(), complete_message.length(), 0);
+
+
+        char header_buffer[HEADER_SIZE];
+        MsgType result;
+        size_t response_length;
+        int counter = 0;
+        while (counter < HEADER_SIZE) {
+            int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+            counter += header_bytes;
         }
+        if (!parseHeader(header_buffer, result, response_length)) {
+            printf("Invalid header from server \n");
+            return 1;
+        }
+
+        if(result == SUCCESS)
+            return 0;
+
     }
+    return 1;
+}
+
+int subscribe(const std::string& queue_name) {
+    if (!queue_name.empty()) {
+        std::string message;
+        std::string div = ":";
+
+        message = queue_name + div;
+        std::string message_content = message.c_str();
+        std::string header = create_header(SUBSC, message_content.length());
+
+        std::string complete_message = header + message_content; 
+        send(client_fd, complete_message.c_str(), complete_message.length(), 0);
+
+        char header_buffer[HEADER_SIZE];
+        MsgType result;
+        size_t response_length;
+        int counter = 0;
+        while (counter < HEADER_SIZE) {
+            int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+            counter += header_bytes;
+        }
+        if (!parseHeader(header_buffer, result, response_length)) {
+            printf("Invalid header from server \n");
+            return 1;
+        }
+
+        if(result == SUCCESS)
+            return 0;
+
+    }
+    return 1;
+}
+
+int unsubscribe(const std::string& queue_name) {
+    if (!queue_name.empty()) {
+        std::string message;
+        std::string div = ":";
+
+        message = queue_name + div;
+        std::string message_content = message.c_str();
+        std::string header = create_header(UNSUB, message_content.length());
+
+        std::string complete_message = header + message_content; 
+        send(client_fd, complete_message.c_str(), complete_message.length(), 0);
+
+        char header_buffer[HEADER_SIZE];
+        MsgType result;
+        size_t response_length;
+        int counter = 0;
+        while (counter < HEADER_SIZE) {
+            int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+            counter += header_bytes;
+        }
+        if (!parseHeader(header_buffer, result, response_length)) {
+            printf("Invalid header from server \n");
+            return 0;
+        }
+
+        if(result == SUCCESS)
+            return 1;
+
+    }
+    return 1;
+}
+
+int send_msg(const std::string& queue_name, const std::string& msg) {
+
+    std::string message;
+    std::string div = ":";
+
+    message = queue_name + div + msg;
+    std::string message_content = message.c_str();
+
+    std::string header = create_header(SENDM, message_content.length());
     
-    return 1;
-}
+    std::string complete_message = header + message_content; 
+    send(client_fd, complete_message.c_str(), complete_message.length(), 0);
 
-int subscribe(const char* queue_name) {
-    fbs action;
-    fsb answer;
-    action.command = SUBSCRIBE;
-    strcpy(action.queue_name, queue_name); 
-
-    send(client_fd, &action, sizeof(action), 0);
-    int bytes_received = read(client_fd, &answer, sizeof(answer));
-    if (bytes_received > 0) {
-        if (answer.result == SUCCESS) {
-            return 0;
-        }
+    char header_buffer[HEADER_SIZE];
+    MsgType result;
+    size_t response_length;
+    int counter = 0;
+    while (counter < HEADER_SIZE) {
+        int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+        counter += header_bytes;
     }
-    return 1;
-}
-
-int unsubscribe(const char* queue_name) {
-    fbs action;
-    fsb answer;
-    action.command = UNSUBSCRIBE;
-    strcpy(action.queue_name, queue_name); 
-
-    send(client_fd, &action, sizeof(action), 0);
-    int bytes_received = read(client_fd, &answer, sizeof(answer));
-    if (bytes_received > 0) {
-        if (answer.result == SUCCESS) {
-            return 0;
-        }
+    if (!parseHeader(header_buffer, result, response_length)) {
+        printf("Invalid header from server \n");
+        return 1;
     }
-    return 1;
-}
 
-int send_msg(const char* queue_name, const char* msg) {
-    fbs action;
-    fsb answer;
-    action.command = SEND;
-    strcpy(action.queue_name, queue_name); 
-    strcpy(action.message, msg);
-
-    send(client_fd, &action, sizeof(action), 0);
-    int bytes_received = read(client_fd, &answer, sizeof(answer));
-    if (bytes_received > 0) {
-        if (answer.result == SUCCESS) {
-            return answer.msg_len;
+    if(result == SUCCESS) {
+        std::vector<char> message_buf(response_length);
+        int counter = 0;
+        while (counter < response_length) {
+            int response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0);
+            counter += response_bytes;
         }
+        std::string sent_bytes = std::string(message_buf.begin(), message_buf.end());
+        return stoi(sent_bytes);
     }
+
     return 1;
 }
 
-int recv_msg(const char* queue_name, char* msg) {
-    fbs action;
-    fsb answer;
-    action.command = RECV;
-    strcpy(action.queue_name, queue_name); 
- 
+int recv_msg(const std::string& queue_name, std::string& msg) {
 
-    send(client_fd, &action, sizeof(action), 0);
-    int bytes_received = read(client_fd, &answer, sizeof(answer));
-    if (bytes_received > 0) {
-        if (answer.result == SUCCESS) {
-            strcpy(msg, answer.message);
-            return answer.msg_len;
-        }
-    }
-    return 1;
-}
+    std::string message;
+    std::string div = ":";
 
-int get_available_queues(char * queues){
-    fbs action;
-    fsb answer;
-    action.command = LIST_QUEUES;
-    send(client_fd, &action, sizeof(action), 0);
+    message = queue_name + div;
+    std::string message_content = message.c_str();
+
+    std::string header = create_header(RECVM, message_content.length());
     
-    int bytes_received = read(client_fd, &answer, sizeof(answer));
-    if (bytes_received > 0) {
-        if (answer.result == SUCCESS) {
-            strcpy(queues, answer.message);
-            return 0;
-        }
+    std::string complete_message = header + message_content; 
+    send(client_fd, complete_message.c_str(), complete_message.length(), 0);
+
+
+    char header_buffer[HEADER_SIZE];
+    MsgType result;
+    size_t response_length;
+    int counter = 0;
+    while (counter < HEADER_SIZE) {
+        int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+        counter += header_bytes;
     }
+    if (!parseHeader(header_buffer, result, response_length)) {
+        printf("Invalid header from server \n");
+        return 0;
+    }
+
+    if(result == SUCCESS) {
+        std::vector<char> message_buf(response_length);
+        int counter = 0;
+        while (counter < response_length) {
+            int response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0);
+            counter += response_bytes;
+        }
+        msg = std::string(message_buf.begin(), message_buf.end());
+        return msg.length();
+    }
+
+    return 1;
+}
+
+int get_available_queues(std::string& queues){
+
+    std::string header = create_header(LISTQ, 0);
+    std::string complete_message = header; 
+    send(client_fd, complete_message.c_str(), complete_message.length(), 0);
+    
+    char header_buffer[HEADER_SIZE];
+    MsgType result;
+    size_t response_length;
+    int counter = 0;
+    while (counter < HEADER_SIZE) {
+        int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+        counter += header_bytes;
+    }
+    if (!parseHeader(header_buffer, result, response_length)) {
+        printf("Invalid header from server \n");
+        return 0;
+    }
+
+    if(result == SUCCESS) {
+        std::vector<char> message_buf(response_length);
+        int counter = 0;
+        while (counter < response_length) {
+            int response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0);
+            counter += response_bytes;
+        }
+        queues = std::string(message_buf.begin(), message_buf.end());
+        return 0;
+    }
+
+    if(result == SUCCESS)
+        return 0;
+
     return 1;
 
 }

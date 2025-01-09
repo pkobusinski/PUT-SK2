@@ -7,37 +7,31 @@
 int main() {
 
     if(fork() == 0){
-        char buf[255];
         connect_to_server("127.0.0.1", 8080);
-        create_queue("kolejka1", 5);
-        subscribe("kolejka1");
-        send_msg("kolejka1", "abc");
-        send_msg("kolejka1", "defg");
-        int cnt = recv_msg("kolejka1", buf );
-        printf("buf: %s, cnt: %d \n", buf, cnt);
-        send_msg("kolejka1", "hijkl");
-        cnt = recv_msg("kolejka1", buf );
-        printf("buf: %s, cnt: %d \n", buf, cnt);
-        
+        std::cout << create_queue("kolejka1", 5) << std::endl;
+        std::cout << create_queue("kolejka2", 10)<< std::endl;
+        std::cout << subscribe("kolejka1") << std::endl;
+        std::cout << unsubscribe("kolejka2") << std::endl;
+        std::cout << send_msg("kolejka1", "test") << std::endl;
+        std::string msg;
+        std::cout << recv_msg("kolejka1", msg) << std::endl;
+        std::cout << send_msg("kolejka1", "last") << std::endl;
+        std::cout << msg << std::endl;
         disconnect();
-        
-
     }else{
-        char buf[255];
+        std::string buf;
         connect_to_server("127.0.0.1", 8080);
         create_queue("kolejka1", 5);
         subscribe("kolejka");
-        get_available_queues(buf);
-        printf("%s\n", buf);
         subscribe("kolejka1");
         int cnt = recv_msg("kolejka1", buf);
-        printf("buf: %s, cnt: %d \n", buf, cnt);
+        std::cout << "buf: " << buf << ", cnt: " << cnt << std::endl;
         send_msg("kolejka1", "123");
+        std::cout << get_available_queues(buf) << std::endl;
+        std::cout << buf << std::endl;
         cnt = recv_msg("kolejka1", buf);
-        printf("buf: %s, cnt: %d \n", buf, cnt);
+        std::cout << "buf: " << buf << ", cnt: " << cnt << std::endl;
         
-        while(true){}
-
+        disconnect();
     }
-    
 }
