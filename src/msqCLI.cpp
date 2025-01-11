@@ -3,7 +3,7 @@
 
 #include <string>
 #include <iostream>
-#include <string>
+#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -43,12 +43,15 @@ int disconnect() {
     }
 }
 
+
 int create_queue(const std::string& queue_name, int holding_time) {
     if (!queue_name.empty() && holding_time > 0) {
         std::string message;
         std::string div = ":";
+        std::string queue_name2 = queue_name;
+        string_procent_encode(queue_name2);
 
-        message = queue_name + div + std::to_string(holding_time);
+        message = queue_name2 + div + std::to_string(holding_time);
         std::string message_content = message.c_str();
         std::string header = create_header(CREAT, message_content.length());
 
@@ -80,8 +83,10 @@ int subscribe(const std::string& queue_name) {
     if (!queue_name.empty()) {
         std::string message;
         std::string div = ":";
+        std::string queue_name2 = queue_name;
+        string_procent_encode(queue_name2);
 
-        message = queue_name + div;
+        message = queue_name2 + div;
         std::string message_content = message.c_str();
         std::string header = create_header(SUBSC, message_content.length());
 
@@ -112,8 +117,10 @@ int unsubscribe(const std::string& queue_name) {
     if (!queue_name.empty()) {
         std::string message;
         std::string div = ":";
+        std::string queue_name2 = queue_name;
+        string_procent_encode(queue_name2);
 
-        message = queue_name + div;
+        message = queue_name2 + div;
         std::string message_content = message.c_str();
         std::string header = create_header(UNSUB, message_content.length());
 
@@ -144,8 +151,12 @@ int send_msg(const std::string& queue_name, const std::string& msg) {
 
     std::string message;
     std::string div = ":";
+    std::string queue_name2 = queue_name;
+    std::string msg2 = msg;
+    string_procent_encode(queue_name2);
+    string_procent_encode(msg2);
 
-    message = queue_name + div + msg;
+    message = queue_name2 + div + msg2;
     std::string message_content = message.c_str();
 
     std::string header = create_header(SENDM, message_content.length());
@@ -184,8 +195,10 @@ int recv_msg(const std::string& queue_name, std::string& msg) {
 
     std::string message;
     std::string div = ":";
+    std::string queue_name2 = queue_name;
+    string_procent_encode(queue_name2);
 
-    message = queue_name + div;
+    message = queue_name2 + div;
     std::string message_content = message.c_str();
 
     std::string header = create_header(RECVM, message_content.length());
@@ -215,6 +228,7 @@ int recv_msg(const std::string& queue_name, std::string& msg) {
             counter += response_bytes;
         }
         msg = std::string(message_buf.begin(), message_buf.end());
+        string_procent_decode(msg);
         return msg.length();
     }
 
@@ -231,13 +245,16 @@ int get_available_queues(std::string& queues){
     MsgType result;
     size_t response_length;
     int counter = 0;
+    
     while (counter < HEADER_SIZE) {
         int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
         counter += header_bytes;
     }
+
     if (!parseHeader(header_buffer, result, response_length)) {
         printf("Invalid header from server \n");
-        return 0;
+        queues = "";
+        return 1;
     }
 
     if(result == SUCCESS) {
@@ -251,5 +268,6 @@ int get_available_queues(std::string& queues){
         return 0;
     }
 
+    queues = "abc abc abc";
     return 1;
 }

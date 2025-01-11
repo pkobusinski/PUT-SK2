@@ -25,3 +25,27 @@ bool parseHeader(const std::string& header, MsgType& command, size_t& message_le
     return true;
 }
 
+void string_procent_encode(std::string& s){
+    std::string encoded; 
+    for (char c : s) {
+        if (c == ':') {
+            encoded += "%3A";
+        } else {
+            encoded += c;
+        }
+    }
+    s = encoded;
+}
+
+void string_procent_decode(std::string& s){
+    std::string decoded; 
+    for (int i = 0; i < s.length(); ++i) {
+        if (s[i] == '%' && s[i+1] == '3' && s[i+2] == 'A') {
+            decoded += ':';
+            i += 2;
+        } else {
+            decoded += s[i];
+        }
+    }
+    s = decoded;
+}

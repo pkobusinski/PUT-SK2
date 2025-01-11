@@ -76,13 +76,15 @@ private:
             }
             
             std::string message(message_buf.begin(), message_buf.end());
-
+            
             switch (command) {
                 case CREAT: {
                     int div_pos = message.find(":");
+                    
                     std::string queue_name = message.substr(0, div_pos);
                     int holding_time = std::stoi(message.substr(div_pos + 1));
-
+                    string_procent_decode(queue_name);
+                    
                     int err = create_queue(queue_name, holding_time);
                     result = (err == 0) ? SUCCESS : FAILURE;
 
@@ -101,6 +103,7 @@ private:
                 case SUBSC: {
                     int div_pos = message.find(':');
                     std::string queue_name = message.substr(0, div_pos);
+                    string_procent_decode(queue_name);
                     int err = subscribe(queue_name, client_id);
                     result = (err == 0) ? SUCCESS : FAILURE;
                     response = create_response(result, "");
@@ -122,6 +125,7 @@ private:
                 case UNSUB: {
                     int div_pos = message.find(':');
                     std::string queue_name = message.substr(0, div_pos);
+                    string_procent_decode(queue_name);
                     int err = unsubscribe(queue_name, client_id);
                     result = (err == 0) ? SUCCESS : FAILURE;
                     response = create_response(result, "");
@@ -147,9 +151,14 @@ private:
                     int div_pos = message.find(':');
                     std::string queue_name = message.substr(0, div_pos);
                     std::string msg = message.substr(div_pos + 1);
+                    string_procent_decode(queue_name);
+                    string_procent_decode(msg);
                     int err = send_message(queue_name, msg, client_id);
                     result = (err == 0) ? SUCCESS : FAILURE;
-                    response = create_response(result, std::to_string(msg.length()));
+                    if(result == SUCCESS)
+                        response = create_response(result, std::to_string(msg.length()));
+                    else
+                        response = create_response(result, "");
                     send(client_fd, response.c_str(), response.length(), 0);
 
                     switch (err) {
@@ -169,8 +178,10 @@ private:
                     int div_pos = message.find(':');
                     std::string queue_name = message.substr(0, div_pos);
                     std::string msg; 
+                    string_procent_decode(queue_name);
                     int err = recv_message(queue_name, msg, client_id);
                     result = (err == 0) ? SUCCESS : FAILURE;
+                    string_procent_encode(msg);
                     response = create_response(result, msg);
                     send(client_fd, response.c_str(), response.length(), 0);
 
@@ -190,8 +201,8 @@ private:
                 }
                 case LISTQ: {
                     std::string list;
-                    get_queue_names(list);
                     result = SUCCESS;
+                    get_queue_names(list);
                     response = create_response(result, list);
                     send(client_fd, response.c_str(), response.length(), 0);
                     printf("Client %d requested list of queues.\n", client_id);
@@ -326,7 +337,12 @@ private:
         std::lock_guard<std::mutex> lock(queues_mutex);  
 
         result.clear();   
-        bool first = true;  
+        bool first = true; 
+        if(queues.empty()){
+            result = "abc";
+            return;
+        }
+            
         for (const auto& pair : queues) {
             const std::string& queue_name = pair.first;
 

@@ -548,6 +548,8 @@ CMakeFiles/demo.dir/src/msqCLI.cpp.o: /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp \
   /usr/include/stdc-predef.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
+  /usr/include/string.h \
+  /usr/include/strings.h \
   /usr/include/time.h \
   /usr/include/unistd.h \
   /usr/include/wchar.h \

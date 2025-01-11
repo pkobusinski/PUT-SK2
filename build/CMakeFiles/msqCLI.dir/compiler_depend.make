@@ -349,6 +349,8 @@ CMakeFiles/msqCLI.dir/src/msqCLI.cpp.o: /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp \
   /usr/include/stdc-predef.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
+  /usr/include/string.h \
+  /usr/include/strings.h \
   /usr/include/time.h \
   /usr/include/unistd.h \
   /usr/include/wchar.h \
@@ -475,6 +477,8 @@ CMakeFiles/msqCLI.dir/src/msqCLI.cpp.o: /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp \
 
 /usr/include/x86_64-linux-gnu/asm/posix_types.h:
 
+/usr/include/string.h:
+
 /usr/include/linux/close_range.h:
 
 /usr/include/c++/13/iostream:
@@ -550,6 +554,8 @@ CMakeFiles/msqCLI.dir/src/msqCLI.cpp.o: /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp \
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
 
 /usr/include/x86_64-linux-gnu/bits/time.h:
+
+/usr/include/strings.h:
 
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
 

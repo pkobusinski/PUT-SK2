@@ -35,5 +35,7 @@ struct Queue {
 
 std::string create_header(int command_type, size_t message_length); 
 bool parseHeader(const std::string& header, MsgType& command, size_t& message_length);
+void string_procent_decode(std::string& s);
+void string_procent_encode(std::string& s);
 
 #endif
