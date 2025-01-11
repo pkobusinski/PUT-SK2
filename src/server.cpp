@@ -75,12 +75,11 @@ private:
                 }
             }
             
-        
             std::string message(message_buf.begin(), message_buf.end());
 
             switch (command) {
                 case CREAT: {
-                    int div_pos = message.find(':');
+                    int div_pos = message.find(":");
                     std::string queue_name = message.substr(0, div_pos);
                     int holding_time = std::stoi(message.substr(div_pos + 1));
 
@@ -328,7 +327,6 @@ private:
 
         result.clear();   
         bool first = true;  
-
         for (const auto& pair : queues) {
             const std::string& queue_name = pair.first;
 
@@ -337,6 +335,25 @@ private:
             }
             first = false;
             result += queue_name;
+        }
+    }
+
+    void remove_expired_messages() {
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));  
+
+            std::lock_guard<std::mutex> lock(queues_mutex);
+            for (auto& queue_entry : queues) {
+                auto& queue = queue_entry.second;
+                while (!queue.queue_messages.empty()) {
+                    Message& msg = queue.queue_messages.front();
+                    time_t current_time = time(NULL);
+                    if (current_time - msg.creation_time >= queue.holding_time) {
+                        queue.queue_messages.pop();  
+                        printf("Message removed from queue %s.\n", queue_entry.first.c_str());  
+                    }
+                }
+            }
         }
     }
 
@@ -382,6 +399,7 @@ public:
                       << inet_ntoa(client_addr.sin_addr) << ":" 
                       << ntohs(client_addr.sin_port) << std::endl;
             std::thread(&Serwer::handleClient, this, client_fd, client_id).detach();
+            std::thread(&Serwer::remove_expired_messages, this).detach();
         }
     }
 };

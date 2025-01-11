@@ -1,13 +1,15 @@
 #include "msqCLI.hpp"
+#include "global.hpp"
+
 #include <string>
 #include <iostream>
-#include <cstring>
+#include <string>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sstream>
 #include <iomanip>
-#include "global.hpp"
+
 
 
 static int client_fd = -1;
@@ -249,9 +251,5 @@ int get_available_queues(std::string& queues){
         return 0;
     }
 
-    if(result == SUCCESS)
-        return 0;
-
     return 1;
-
 }
