@@ -15,4 +15,7 @@ add_executable(demo src/demo.cpp ${GLOBAL_SRC} ${MSQCLI_SRC})
 
 target_link_libraries(demo PRIVATE msqCLI)
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-Wall -Wextra)
+endif()
 
