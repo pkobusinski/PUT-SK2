@@ -1,2 +1,7 @@
 .idea/
 .vscode/
+build/CMakeFiles
+build/CMakeCache.txt
+build/.cmake/api/v1
+build/cmake_install.cmake
+build/Makefile
