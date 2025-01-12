@@ -22,15 +22,16 @@ int main() {
         std::string buf;
         connect_to_server("127.0.0.1", 8080);
         create_queue("kolejka1", 5);
+        create_queue("kolejka8", 5);
         subscribe("kolejka");
         subscribe("kolejka1");
         send_msg("kolejka1", "123");
         std::string buf2;
         std::cout << get_available_queues(buf2) << std::endl;
         std::cout << buf2 << std::endl;
-        int cnt = recv_msg("kolejka1", buf);
+        int cnt = recv_msg("kolejka8", buf);
         std::cout << "buf: " << buf << ", cnt: " << cnt << std::endl;
-        
+        // while(true){}
         disconnect();
     }
 }

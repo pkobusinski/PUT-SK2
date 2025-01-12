@@ -73,43 +73,43 @@ CMakeFiles/demo.dir/src/demo.cpp.o: CMakeFiles/demo.dir/flags.make
 CMakeFiles/demo.dir/src/demo.cpp.o: /home/piotr/sk2/PUT-SK2/src/demo.cpp
 CMakeFiles/demo.dir/src/demo.cpp.o: CMakeFiles/demo.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/piotr/sk2/PUT-SK2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/demo.dir/src/demo.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/demo.dir/src/demo.cpp.o -MF CMakeFiles/demo.dir/src/demo.cpp.o.d -o CMakeFiles/demo.dir/src/demo.cpp.o -c /home/piotr/sk2/PUT-SK2/src/demo.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/demo.dir/src/demo.cpp.o -MF CMakeFiles/demo.dir/src/demo.cpp.o.d -o CMakeFiles/demo.dir/src/demo.cpp.o -c /home/piotr/sk2/PUT-SK2/src/demo.cpp
 
 CMakeFiles/demo.dir/src/demo.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/demo.dir/src/demo.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/demo.cpp > CMakeFiles/demo.dir/src/demo.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/demo.cpp > CMakeFiles/demo.dir/src/demo.cpp.i
 
 CMakeFiles/demo.dir/src/demo.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/demo.dir/src/demo.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/demo.cpp -o CMakeFiles/demo.dir/src/demo.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/demo.cpp -o CMakeFiles/demo.dir/src/demo.cpp.s
 
 CMakeFiles/demo.dir/src/global.cpp.o: CMakeFiles/demo.dir/flags.make
 CMakeFiles/demo.dir/src/global.cpp.o: /home/piotr/sk2/PUT-SK2/src/global.cpp
 CMakeFiles/demo.dir/src/global.cpp.o: CMakeFiles/demo.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/piotr/sk2/PUT-SK2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/demo.dir/src/global.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/demo.dir/src/global.cpp.o -MF CMakeFiles/demo.dir/src/global.cpp.o.d -o CMakeFiles/demo.dir/src/global.cpp.o -c /home/piotr/sk2/PUT-SK2/src/global.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/demo.dir/src/global.cpp.o -MF CMakeFiles/demo.dir/src/global.cpp.o.d -o CMakeFiles/demo.dir/src/global.cpp.o -c /home/piotr/sk2/PUT-SK2/src/global.cpp
 
 CMakeFiles/demo.dir/src/global.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/demo.dir/src/global.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/global.cpp > CMakeFiles/demo.dir/src/global.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/global.cpp > CMakeFiles/demo.dir/src/global.cpp.i
 
 CMakeFiles/demo.dir/src/global.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/demo.dir/src/global.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/global.cpp -o CMakeFiles/demo.dir/src/global.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/global.cpp -o CMakeFiles/demo.dir/src/global.cpp.s
 
 CMakeFiles/demo.dir/src/msqCLI.cpp.o: CMakeFiles/demo.dir/flags.make
 CMakeFiles/demo.dir/src/msqCLI.cpp.o: /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp
 CMakeFiles/demo.dir/src/msqCLI.cpp.o: CMakeFiles/demo.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/piotr/sk2/PUT-SK2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/demo.dir/src/msqCLI.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/demo.dir/src/msqCLI.cpp.o -MF CMakeFiles/demo.dir/src/msqCLI.cpp.o.d -o CMakeFiles/demo.dir/src/msqCLI.cpp.o -c /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/demo.dir/src/msqCLI.cpp.o -MF CMakeFiles/demo.dir/src/msqCLI.cpp.o.d -o CMakeFiles/demo.dir/src/msqCLI.cpp.o -c /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp
 
 CMakeFiles/demo.dir/src/msqCLI.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/demo.dir/src/msqCLI.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp > CMakeFiles/demo.dir/src/msqCLI.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp > CMakeFiles/demo.dir/src/msqCLI.cpp.i
 
 CMakeFiles/demo.dir/src/msqCLI.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/demo.dir/src/msqCLI.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp -o CMakeFiles/demo.dir/src/msqCLI.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/msqCLI.cpp -o CMakeFiles/demo.dir/src/msqCLI.cpp.s
 
 # Object files for target demo
 demo_OBJECTS = \

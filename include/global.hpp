@@ -5,9 +5,9 @@
 #include <queue>
 #include <string> 
 
-#define HEADER_SIZE 13
+#define HEADER_SIZE 13              // ustalona stala dlugosc naglowka dla wszystkich wiadomosci 
 
-enum MsgType {
+enum MsgType {                      // typy przesylanych wiadomosci 
     CREAT,
     SUBSC,
     UNSUB,
@@ -19,13 +19,13 @@ enum MsgType {
 };
 
 
-struct Message {
+struct Message {                    // struktura wiadomosci przetrzymywanych w kolejkach  
     std::string text;  
     time_t creation_time;
     bool is_read;  
 };
 
-struct Queue {
+struct Queue {                      // struktura kolejki przetrzymujacej wiadomosci 
     int holding_time;
     std::vector<int> queue_clients;
     std::queue<Message> queue_messages;
@@ -33,9 +33,9 @@ struct Queue {
 
 
 
-std::string create_header(int command_type, size_t message_length); 
-bool parseHeader(const std::string& header, MsgType& command, size_t& message_length);
-void string_procent_decode(std::string& s);
-void string_procent_encode(std::string& s);
+std::string create_header(int command_type, int message_length);                                //tworzenie naglowka dla wiadomosc wysylanych przez server 
+bool parseHeader(const std::string& header, MsgType& command, int& message_length);             //przetwarzanie informacji z naglowka wiadomosci 
+void string_procent_decode(std::string& s);                                                        //umozliwienie uzycia znaku ':' w nazwach kolejek i wiadomosciach 
+void string_procent_encode(std::string& s);     
 
 #endif

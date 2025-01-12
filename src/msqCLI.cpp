@@ -10,8 +10,6 @@
 #include <sstream>
 #include <iomanip>
 
-
-
 static int client_fd = -1;
 
 int connect_to_server(const char* ip, int port) {
@@ -61,7 +59,7 @@ int create_queue(const std::string& queue_name, int holding_time) {
 
         char header_buffer[HEADER_SIZE];
         MsgType result;
-        size_t response_length;
+        int response_length;
         int counter = 0;
         while (counter < HEADER_SIZE) {
             int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
@@ -95,7 +93,7 @@ int subscribe(const std::string& queue_name) {
 
         char header_buffer[HEADER_SIZE];
         MsgType result;
-        size_t response_length;
+        int response_length;
         int counter = 0;
         while (counter < HEADER_SIZE) {
             int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
@@ -129,7 +127,7 @@ int unsubscribe(const std::string& queue_name) {
 
         char header_buffer[HEADER_SIZE];
         MsgType result;
-        size_t response_length;
+        int response_length;
         int counter = 0;
         while (counter < HEADER_SIZE) {
             int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
@@ -166,7 +164,7 @@ int send_msg(const std::string& queue_name, const std::string& msg) {
 
     char header_buffer[HEADER_SIZE];
     MsgType result;
-    size_t response_length;
+    int response_length;
     int counter = 0;
     while (counter < HEADER_SIZE) {
         int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
@@ -209,7 +207,7 @@ int recv_msg(const std::string& queue_name, std::string& msg) {
 
     char header_buffer[HEADER_SIZE];
     MsgType result;
-    size_t response_length;
+    int response_length;
     int counter = 0;
     while (counter < HEADER_SIZE) {
         int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
@@ -243,7 +241,7 @@ int get_available_queues(std::string& queues){
     
     char header_buffer[HEADER_SIZE];
     MsgType result;
-    size_t response_length;
+    int response_length;
     int counter = 0;
     
     while (counter < HEADER_SIZE) {
@@ -268,6 +266,6 @@ int get_available_queues(std::string& queues){
         return 0;
     }
 
-    queues = "abc abc abc";
+    queues = "";
     return 1;
 }

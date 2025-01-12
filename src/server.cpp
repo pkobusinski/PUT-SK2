@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstring>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -11,19 +10,20 @@
 #include <thread>
 #include <vector>
 #include <memory>
+#include <csignal> 
 #include "global.hpp"
-
-#include <atomic>
 
 
 class Serwer {
 private:
-    int server_fd;
+    int server_fd;  
     struct sockaddr_in server_addr;
-    std::unordered_map<std::string, Queue> queues;          //lista kolejek 
-    std::mutex queues_mutex;
-    std::condition_variable queue_condition;
+    std::unordered_map<std::string, Queue> queues;          
+    std::mutex queues_mutex;                                // mutex dla ogolnego dostepu do kolejek 
+    std::condition_variable queue_condition;                // zmienna warunkowa obslugujaca oczekiwanie na pojawienie sie wiadomsci w kolejce   
     int client_id_counter = 1;
+    bool running = true; 
+    std::vector<std::thread> threads; 
 
     std::string create_response(MsgType response_type, std::string msg){
         std::string header = create_header(response_type, msg.length());
@@ -33,16 +33,16 @@ private:
         return header + msg;
     }
 
-    void handleClient(int client_fd, int client_id) {
+    void handleClient(int client_fd, int client_id) {                       // obsluga klienta 
         
         char header_buffer[HEADER_SIZE];
         std::string response;
         
-        while (true) {
+        while (running) {
            int counter = 0;
-            while (counter < HEADER_SIZE) {
+            while (counter < HEADER_SIZE) {                                 // zapewnienie odczytania calego naglowka 
                 int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter, 0);
-                if (header_bytes <= 0) {
+                if (header_bytes <= 0 ) {
                     printf("Client %d disconnected.\n", client_id);
                     shutdown(client_fd, SHUT_RDWR);
                     close(client_fd);
@@ -53,7 +53,7 @@ private:
 
             MsgType result;
             MsgType command;
-            size_t message_length;
+            int message_length;
             if (!parseHeader(header_buffer, command, message_length)) {
                 printf("Invalid header from client %d\n", client_id);
                 return ;
@@ -62,8 +62,8 @@ private:
             counter = 0;
             std::vector<char> message_buf(message_length);
             
-            if (message_length > 0) {
-                while (counter < message_length) {
+            if (message_length > 0) {                                       
+                while (counter < message_length) {                          // zapewnienie odczytania calej wiadomosci 
                     int message_bytes = recv(client_fd, message_buf.data() + counter, message_length - counter, 0);
                     if (message_bytes <= 0) {
                         printf("Client %d disconnected.\n", client_id);
@@ -77,7 +77,7 @@ private:
             
             std::string message(message_buf.begin(), message_buf.end());
             
-            switch (command) {
+            switch (command) {                      // obsluga poszczegolnych funkcji biblioteki 
                 case CREAT: {
                     int div_pos = message.find(":");
                     
@@ -119,6 +119,8 @@ private:
                         case 2:
                             printf("Failed to subscribe, Client %d already subscribes queue %s.\n", client_id, queue_name.c_str());
                             break;
+                        default:
+                            break; 
                     }
                     break;
                 }
@@ -142,7 +144,6 @@ private:
                             printf("Failed to unsubscribe, Client %d does not subscribe queue %s.\n", client_id, queue_name.c_str());
                             break;
                         default:
-                            printf("Failed to unsubscribe\n");
                             break;
                     }
                     break;
@@ -155,10 +156,12 @@ private:
                     string_procent_decode(msg);
                     int err = send_message(queue_name, msg, client_id);
                     result = (err == 0) ? SUCCESS : FAILURE;
+                
                     if(result == SUCCESS)
                         response = create_response(result, std::to_string(msg.length()));
                     else
                         response = create_response(result, "");
+
                     send(client_fd, response.c_str(), response.length(), 0);
 
                     switch (err) {
@@ -171,6 +174,8 @@ private:
                         case 2:
                             printf("Failed to send msg, Client %d does not subscribe queue %s.\n", client_id, queue_name.c_str());
                             break;
+                        default:
+                            break; 
                     }
                     break;
                 }
@@ -178,11 +183,18 @@ private:
                     int div_pos = message.find(':');
                     std::string queue_name = message.substr(0, div_pos);
                     std::string msg; 
+                    
                     string_procent_decode(queue_name);
                     int err = recv_message(queue_name, msg, client_id);
                     result = (err == 0) ? SUCCESS : FAILURE;
-                    string_procent_encode(msg);
-                    response = create_response(result, msg);
+                    std::string msg_encoded = msg; 
+                    string_procent_encode(msg_encoded);
+
+                    if(result == SUCCESS)
+                        response = create_response(result, msg_encoded);
+                    else
+                        response = create_response(result, "");
+
                     send(client_fd, response.c_str(), response.length(), 0);
 
                     switch (err) {
@@ -195,6 +207,8 @@ private:
                             break;
                         case 2:
                             printf("Failed to receive msg, Client %d does not subscribe queue %s.\n", client_id, queue_name.c_str());
+                            break;
+                        default: 
                             break;
                     }
                     break;
@@ -219,6 +233,7 @@ private:
             
 
         }
+
         shutdown(client_fd, SHUT_RDWR);
         close(client_fd);
         
@@ -240,7 +255,7 @@ private:
         auto it = queues.find(name);
         
         auto& clients = it->second.queue_clients;
-        for (int i = 0; i < clients.size(); ++i) {
+        for (size_t i = 0; i < clients.size(); ++i) {
             if (clients[i] == client_id) {
                 return true;  
             }
@@ -275,7 +290,7 @@ private:
         }
 
         auto& clients = queues[name].queue_clients;
-        for (int i = 0; i < clients.size(); ++i) {              
+        for (size_t i = 0; i < clients.size(); ++i) {              
             if (clients[i] == client_id) {
                 clients[i] = clients.back();
                 clients.pop_back();
@@ -310,27 +325,30 @@ private:
     }
 
     int recv_message(std::string& queue_name, std::string& message_text, int client_id) {
-        std::unique_lock<std::mutex> lock(queues_mutex);    
+        std::unique_lock<std::mutex> lock(queues_mutex);
 
         if (!queues.count(queue_name)) {
-            return 1;  
+            return 1;
         }
 
         if (!is_subscribed(queue_name, client_id)) {
-            return 2;  
+            return 2;
         }
 
         auto& queue = queues[queue_name];
-        
-        while (queue.queue_messages.empty()) {
-            queue_condition.wait(lock);  
+        queue_condition.wait(lock, [&queue, this] {
+            return !queue.queue_messages.empty() || !running;
+        });
+
+        if (!running) {
+            return 3;
         }
 
         Message& msg = queue.queue_messages.front();
-        message_text =  msg.text;  
-        queue.queue_messages.pop(); 
+        message_text = msg.text;
+        queue.queue_messages.pop();
 
-        return 0;  
+        return 0;
     }
 
     void get_queue_names(std::string& result) {
@@ -339,7 +357,7 @@ private:
         result.clear();   
         bool first = true; 
         if(queues.empty()){
-            result = "abc";
+            result = "";
             return;
         }
             
@@ -355,8 +373,8 @@ private:
     }
 
     void remove_expired_messages() {
-        while (true) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));  
+        while (running) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
 
             std::lock_guard<std::mutex> lock(queues_mutex);
             for (auto& queue_entry : queues) {
@@ -365,8 +383,10 @@ private:
                     Message& msg = queue.queue_messages.front();
                     time_t current_time = time(NULL);
                     if (current_time - msg.creation_time >= queue.holding_time) {
-                        queue.queue_messages.pop();  
-                        printf("Message removed from queue %s.\n", queue_entry.first.c_str());  
+                        queue.queue_messages.pop();
+                        printf("Message removed from queue %s.\n", queue_entry.first.c_str());
+                    } else {
+                        break;  
                     }
                 }
             }
@@ -398,10 +418,25 @@ public:
             exit(EXIT_FAILURE);
         }
     }
+    
+    ~Serwer(){
+        stop();
+    }
+
+    void stop(){
+        running = false; 
+        queue_condition.notify_all();
+
+        shutdown(server_fd, SHUT_RDWR);
+        close(server_fd);
+        
+    }
+
 
     void run() {
         std::cout << "Server is listening on port" << ":" << ntohs(server_addr.sin_port) << std::endl;
-        while (true) {
+
+        while (running) {
             int client_fd;
             struct sockaddr_in client_addr;
             socklen_t client_addr_len = sizeof(client_addr);
@@ -410,16 +445,30 @@ public:
                 perror("Accept failed");
                 continue;
             }
+
+            threads.emplace_back(&Serwer::remove_expired_messages, this);
+
             int client_id = client_id_counter++; 
             std::cout << "Client " << client_id << " connected from " 
                       << inet_ntoa(client_addr.sin_addr) << ":" 
                       << ntohs(client_addr.sin_port) << std::endl;
-            std::thread(&Serwer::handleClient, this, client_fd, client_id).detach();
-            std::thread(&Serwer::remove_expired_messages, this).detach();
+                      
+            threads.emplace_back(&Serwer::handleClient, this, client_fd, client_id);
+            
         }
+        std::cout << "Server closed" << std::endl;
     }
 };
 
+Serwer * global_server = nullptr; 
+
+void signal_handler(int signum) {
+    if (global_server) {
+        std::cout << "\nServer closed" << std::endl;
+        global_server->stop();
+    }
+    std::exit(signum);
+}
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <port>" << std::endl;
@@ -429,6 +478,10 @@ int main(int argc, char* argv[]) {
     int port = std::stoi(argv[1]);
 
     Serwer server(port);
+
+    global_server = &server; 
+
+    std::signal(SIGINT, signal_handler);
     server.run();
     return 0;
 }

@@ -73,29 +73,29 @@ CMakeFiles/server.dir/src/server.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp
 CMakeFiles/server.dir/src/server.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/piotr/sk2/PUT-SK2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/src/server.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/server.cpp.o -MF CMakeFiles/server.dir/src/server.cpp.o.d -o CMakeFiles/server.dir/src/server.cpp.o -c /home/piotr/sk2/PUT-SK2/src/server.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/server.cpp.o -MF CMakeFiles/server.dir/src/server.cpp.o.d -o CMakeFiles/server.dir/src/server.cpp.o -c /home/piotr/sk2/PUT-SK2/src/server.cpp
 
 CMakeFiles/server.dir/src/server.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/server.cpp > CMakeFiles/server.dir/src/server.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/server.cpp > CMakeFiles/server.dir/src/server.cpp.i
 
 CMakeFiles/server.dir/src/server.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/server.cpp -o CMakeFiles/server.dir/src/server.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/server.cpp -o CMakeFiles/server.dir/src/server.cpp.s
 
 CMakeFiles/server.dir/src/global.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/global.cpp.o: /home/piotr/sk2/PUT-SK2/src/global.cpp
 CMakeFiles/server.dir/src/global.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/piotr/sk2/PUT-SK2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/server.dir/src/global.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/global.cpp.o -MF CMakeFiles/server.dir/src/global.cpp.o.d -o CMakeFiles/server.dir/src/global.cpp.o -c /home/piotr/sk2/PUT-SK2/src/global.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/global.cpp.o -MF CMakeFiles/server.dir/src/global.cpp.o.d -o CMakeFiles/server.dir/src/global.cpp.o -c /home/piotr/sk2/PUT-SK2/src/global.cpp
 
 CMakeFiles/server.dir/src/global.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/server.dir/src/global.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/global.cpp > CMakeFiles/server.dir/src/global.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/piotr/sk2/PUT-SK2/src/global.cpp > CMakeFiles/server.dir/src/global.cpp.i
 
 CMakeFiles/server.dir/src/global.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/global.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/global.cpp -o CMakeFiles/server.dir/src/global.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/piotr/sk2/PUT-SK2/src/global.cpp -o CMakeFiles/server.dir/src/global.cpp.s
 
 # Object files for target server
 server_OBJECTS = \

@@ -222,7 +222,6 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
   /usr/include/asm-generic/posix_types.h \
   /usr/include/asm-generic/socket.h \
   /usr/include/asm-generic/sockios.h \
-  /usr/include/c++/13/atomic \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -315,11 +314,11 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/condition_variable \
+  /usr/include/c++/13/csignal \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdint \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
-  /usr/include/c++/13/cstring \
   /usr/include/c++/13/ctime \
   /usr/include/c++/13/cwchar \
   /usr/include/c++/13/cwctype \
@@ -374,12 +373,11 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
   /usr/include/netinet/in.h \
   /usr/include/pthread.h \
   /usr/include/sched.h \
+  /usr/include/signal.h \
   /usr/include/stdc-predef.h \
   /usr/include/stdint.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
-  /usr/include/string.h \
-  /usr/include/strings.h \
   /usr/include/time.h \
   /usr/include/unistd.h \
   /usr/include/wchar.h \
@@ -413,9 +411,22 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
   /usr/include/x86_64-linux-gnu/bits/sched.h \
   /usr/include/x86_64-linux-gnu/bits/select.h \
   /usr/include/x86_64-linux-gnu/bits/setjmp.h \
+  /usr/include/x86_64-linux-gnu/bits/sigaction.h \
+  /usr/include/x86_64-linux-gnu/bits/sigcontext.h \
+  /usr/include/x86_64-linux-gnu/bits/sigevent-consts.h \
+  /usr/include/x86_64-linux-gnu/bits/siginfo-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/siginfo-consts-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/siginfo-consts.h \
+  /usr/include/x86_64-linux-gnu/bits/signal_ext.h \
+  /usr/include/x86_64-linux-gnu/bits/signum-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/signum-generic.h \
+  /usr/include/x86_64-linux-gnu/bits/sigstack.h \
+  /usr/include/x86_64-linux-gnu/bits/sigstksz.h \
+  /usr/include/x86_64-linux-gnu/bits/sigthread.h \
   /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
   /usr/include/x86_64-linux-gnu/bits/socket.h \
   /usr/include/x86_64-linux-gnu/bits/socket_type.h \
+  /usr/include/x86_64-linux-gnu/bits/ss_flags.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
@@ -436,19 +447,26 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sig_atomic_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/siginfo_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigval_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/stack_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
@@ -481,6 +499,7 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
   /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
   /usr/include/x86_64-linux-gnu/sys/socket.h \
   /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/include/x86_64-linux-gnu/sys/ucontext.h \
   /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
   /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h \
   /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h
@@ -488,15 +507,47 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 
 /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h:
 
+/usr/include/x86_64-linux-gnu/sys/ucontext.h:
+
 /usr/include/x86_64-linux-gnu/bits/unistd_ext.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/stack_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/sigval_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/siginfo_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h:
 
+/usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h:
+
 /usr/include/x86_64-linux-gnu/bits/stdint-least.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/sig_atomic_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/ss_flags.h:
 
 /usr/include/x86_64-linux-gnu/bits/socket.h:
 
 /usr/include/x86_64-linux-gnu/bits/sockaddr.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigthread.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigstksz.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigstack.h:
+
+/usr/include/x86_64-linux-gnu/bits/siginfo-consts-arch.h:
+
+/usr/include/x86_64-linux-gnu/bits/siginfo-arch.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigevent-consts.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigcontext.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigaction.h:
 
 /usr/include/x86_64-linux-gnu/bits/posix_opt.h:
 
@@ -507,10 +558,6 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 /usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
 
 /usr/include/unistd.h:
-
-/usr/include/string.h:
-
-/usr/include/netinet/in.h:
 
 /usr/include/stdlib.h:
 
@@ -523,6 +570,8 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 /usr/include/c++/13/ext/aligned_buffer.h:
 
 /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h:
+
+/usr/include/c++/13/csignal:
 
 /usr/include/stdint.h:
 
@@ -554,7 +603,7 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 
 /usr/include/c++/13/istream:
 
-/usr/include/strings.h:
+/usr/include/signal.h:
 
 /usr/include/c++/13/iomanip:
 
@@ -615,6 +664,8 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 /usr/include/sched.h:
 
 /usr/include/wctype.h:
+
+/usr/include/x86_64-linux-gnu/bits/signum-arch.h:
 
 /usr/include/c++/13/bits/stl_pair.h:
 
@@ -702,6 +753,8 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 
 /usr/include/c++/13/bits/hashtable_policy.h:
 
+/usr/include/netinet/in.h:
+
 /usr/include/c++/13/bits/basic_string.tcc:
 
 /usr/include/c++/13/bits/allocated_ptr.h:
@@ -717,6 +770,8 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 /usr/include/c++/13/bits/stl_iterator_base_funcs.h:
 
 /usr/include/asm-generic/errno-base.h:
+
+/usr/include/x86_64-linux-gnu/bits/signum-generic.h:
 
 /usr/include/c++/13/iosfwd:
 
@@ -910,6 +965,8 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
 
+/usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h:
+
 /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
@@ -968,6 +1025,8 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h:
 
+/usr/include/x86_64-linux-gnu/bits/signal_ext.h:
+
 /usr/include/c++/13/bits/char_traits.h:
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_inline.h:
@@ -990,11 +1049,11 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 
 /usr/include/x86_64-linux-gnu/sys/types.h:
 
+/usr/include/x86_64-linux-gnu/bits/siginfo-consts.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:
 
 /home/piotr/sk2/PUT-SK2/src/server.cpp:
-
-/usr/include/c++/13/atomic:
 
 /usr/include/c++/13/backward/auto_ptr.h:
 
@@ -1033,8 +1092,6 @@ CMakeFiles/server.dir/src/server.cpp.o: /home/piotr/sk2/PUT-SK2/src/server.cpp \
 /usr/include/c++/13/bits/unique_lock.h:
 
 /usr/include/c++/13/mutex:
-
-/usr/include/c++/13/cstring:
 
 /usr/include/c++/13/ext/concurrence.h:
 
