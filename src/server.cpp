@@ -129,9 +129,18 @@ private:
                     std::string queue_name = message.substr(0, div_pos);
                     string_procent_decode(queue_name);
                     int err = unsubscribe(queue_name, client_id);
+                    
                     result = (err == 0) ? SUCCESS : FAILURE;
                     response = create_response(result, "");
                     send(client_fd, response.c_str(), response.length(), 0);
+
+                    if (result == SUCCESS) { 
+                        std::lock_guard<std::mutex> lock(queues_mutex); 
+                        if (is_queue_empty(queue_name)) { 
+                            queues.erase(queue_name); 
+                            printf("Queue %s has no subscribers and has been removed.\n", queue_name.c_str());
+                        }
+                    }
 
                     switch (err) {
                         case 0:
@@ -238,7 +247,14 @@ private:
         close(client_fd);
         
     }
-    
+    bool is_queue_empty(const std::string& queue_name) {
+        auto queue = queues.find(queue_name); 
+        if (queue != queues.end()) {
+            return queue->second.queue_clients.empty(); 
+        }
+        return true; 
+    }
+
     int create_queue(std::string &name, int holding_time){
         std::lock_guard<std::mutex> lock(queues_mutex); 
         if (queues.count(name)) {            
