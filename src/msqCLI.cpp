@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sstream>
 #include <iomanip>
@@ -18,10 +19,12 @@ int connect_to_server(const char* ip, int port) {
         return 1;
     }
     
+    in_addr adres;
+    inet_aton(ip, &adres);
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
-    inet_pton(AF_INET, ip, &server_addr.sin_addr);
+    server_addr.sin_addr = adres;
     
     if (connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         return 1;
@@ -61,8 +64,10 @@ int create_queue(const std::string& queue_name, int holding_time) {
         MsgType result;
         int response_length;
         int counter = 0;
+        int header_bytes; 
         while (counter < HEADER_SIZE) {
-            int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+           if ((header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter, 0)) < 0)
+                return 1; 
             counter += header_bytes;
         }
         if (!parseHeader(header_buffer, result, response_length)) {
@@ -95,8 +100,10 @@ int subscribe(const std::string& queue_name) {
         MsgType result;
         int response_length;
         int counter = 0;
+        int header_bytes; 
         while (counter < HEADER_SIZE) {
-            int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+            if ((header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter, 0)) < 0)
+                return 1; 
             counter += header_bytes;
         }
         if (!parseHeader(header_buffer, result, response_length)) {
@@ -129,8 +136,10 @@ int unsubscribe(const std::string& queue_name) {
         MsgType result;
         int response_length;
         int counter = 0;
+        int header_bytes; 
         while (counter < HEADER_SIZE) {
-            int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+            if ((header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter, 0)) < 0)
+                return 1; 
             counter += header_bytes;
         }
         if (!parseHeader(header_buffer, result, response_length)) {
@@ -166,8 +175,10 @@ int send_msg(const std::string& queue_name, const std::string& msg) {
     MsgType result;
     int response_length;
     int counter = 0;
+    int header_bytes; 
     while (counter < HEADER_SIZE) {
-        int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+        if ((header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter, 0)) < 0)
+            return 1; 
         counter += header_bytes;
     }
     if (!parseHeader(header_buffer, result, response_length)) {
@@ -178,8 +189,10 @@ int send_msg(const std::string& queue_name, const std::string& msg) {
     if(result == SUCCESS) {
         std::vector<char> message_buf(response_length);
         int counter = 0;
+        int response_bytes;
         while (counter < response_length) {
-            int response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0);
+           if ((response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0)) < 0) 
+                return 1;
             counter += response_bytes;
         }
         std::string sent_bytes = std::string(message_buf.begin(), message_buf.end());
@@ -209,8 +222,10 @@ int recv_msg(const std::string& queue_name, std::string& msg) {
     MsgType result;
     int response_length;
     int counter = 0;
+    int header_bytes; 
     while (counter < HEADER_SIZE) {
-        int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+        if ((header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter, 0)) < 0)
+            return 1; 
         counter += header_bytes;
     }
     if (!parseHeader(header_buffer, result, response_length)) {
@@ -221,8 +236,10 @@ int recv_msg(const std::string& queue_name, std::string& msg) {
     if(result == SUCCESS) {
         std::vector<char> message_buf(response_length);
         int counter = 0;
+        int response_bytes;
         while (counter < response_length) {
-            int response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0);
+           if ((response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0)) < 0) 
+                return 1;
             counter += response_bytes;
         }
         msg = std::string(message_buf.begin(), message_buf.end());
@@ -243,9 +260,10 @@ int get_available_queues(std::string& queues){
     MsgType result;
     int response_length;
     int counter = 0;
-    
+    int header_bytes; 
     while (counter < HEADER_SIZE) {
-        int header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter,0 );
+        if ((header_bytes = recv(client_fd, header_buffer + counter, HEADER_SIZE - counter, 0)) < 0)
+            return 1; 
         counter += header_bytes;
     }
 
@@ -258,8 +276,10 @@ int get_available_queues(std::string& queues){
     if(result == SUCCESS) {
         std::vector<char> message_buf(response_length);
         int counter = 0;
+        int response_bytes;
         while (counter < response_length) {
-            int response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0);
+           if ((response_bytes = recv(client_fd, message_buf.data() + counter, response_length - counter, 0)) < 0) 
+                return 1;
             counter += response_bytes;
         }
         queues = std::string(message_buf.begin(), message_buf.end());

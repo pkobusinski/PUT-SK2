@@ -19,6 +19,7 @@ int main() {
         std::cout << msg << std::endl;
         subscribe("kolejka7");
         disconnect();
+        
     }else if (fork() ==0){
             std::string buf;
             connect_to_server("127.0.0.1", 8080);

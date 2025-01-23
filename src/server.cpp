@@ -232,7 +232,7 @@ private:
                     break;
                 }
                 default:{
-                    response = FAILURE;
+                    result = FAILURE;
                     response = create_response(result, "");
                     send(client_fd, response.c_str(), response.length(), 0);
                     break;
@@ -335,7 +335,7 @@ private:
         msg.text = message_text; 
         queues[queue_name].queue_messages.push(msg);
 
-        queue_condition.notify_one();
+        queue_condition.notify_all();
 
         return 0;  
     }
@@ -451,6 +451,7 @@ public:
 
     void run() {
         std::cout << "Server is listening on port" << ":" << ntohs(server_addr.sin_port) << std::endl;
+        threads.emplace_back(&Serwer::remove_expired_messages, this);
 
         while (running) {
             int client_fd;
@@ -462,7 +463,7 @@ public:
                 continue;
             }
 
-            threads.emplace_back(&Serwer::remove_expired_messages, this);
+            
 
             int client_id = client_id_counter++; 
             std::cout << "Client " << client_id << " connected from " 
